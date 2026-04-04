@@ -1,0 +1,17 @@
+.env
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.coverage
+htmlcov/
+.git/
+.gitignore
+.idea/
+.vscode/
+tests/
+README.md
+*.md
+requirements-dev.txt

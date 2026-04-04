@@ -1,0 +1,223 @@
+{
+  "job_id": "a73e404b-0881-496b-9036-35e36ddfc3bf",
+  "status": "completed",
+  "product_name": "iPhone 16 Pro",
+  "category": "consumer electronics",
+  "target_market": "global",
+  "analysis_depth": "standard",
+  "created_at": "2026-04-04T08:58:42.372569Z",
+  "completed_at": "2026-04-04T08:58:43.691777Z",
+  "report": {
+    "executive_summary": "The iPhone 16 Pro holds a premium position with a mixed customer sentiment score of 0.45, driven by positive themes of performance, camera quality, and build quality, but hindered by concerns over battery life and price.",
+    "product_analysis": {
+      "average_price": 1019.25,
+      "price_range_min": 979.0,
+      "price_range_max": 1099.0,
+      "market_position": "premium",
+      "competitor_count": 3,
+      "top_platforms": [
+        {
+          "platform": "Amazon",
+          "price": 999.99,
+          "currency": "USD"
+        },
+        {
+          "platform": "Best Buy",
+          "price": 999.0,
+          "currency": "USD"
+        },
+        {
+          "platform": "eBay (new)",
+          "price": 979.0,
+          "currency": "USD"
+        },
+        {
+          "platform": "Apple Store",
+          "price": 1099.0,
+          "currency": "USD"
+        }
+      ],
+      "top_competitors": [
+        {
+          "name": "Samsung Galaxy S25 Ultra",
+          "price": 1299.99,
+          "market_share_pct": 28.0
+        },
+        {
+          "name": "Google Pixel 9 Pro",
+          "price": 999.0,
+          "market_share_pct": 8.0
+        },
+        {
+          "name": "OnePlus 13",
+          "price": 899.0,
+          "market_share_pct": 3.5
+        }
+      ]
+    },
+    "sentiment_analysis": {
+      "overall_score": 0.453,
+      "label": "mixed",
+      "review_count": 31299,
+      "top_themes": [
+        {
+          "theme": "performance",
+          "sentiment": "positive",
+          "frequency": 1428
+        },
+        {
+          "theme": "camera quality",
+          "sentiment": "positive",
+          "frequency": 1144
+        },
+        {
+          "theme": "build quality",
+          "sentiment": "positive",
+          "frequency": 899
+        },
+        {
+          "theme": "ecosystem integration",
+          "sentiment": "positive",
+          "frequency": 869
+        },
+        {
+          "theme": "display quality",
+          "sentiment": "positive",
+          "frequency": 714
+        },
+        {
+          "theme": "software updates",
+          "sentiment": "positive",
+          "frequency": 719
+        }
+      ],
+      "sample_positive": "Premium build quality — feels solid and well-crafted in hand.",
+      "sample_negative": "Expensive for what it offers compared to Android alternatives at half the price."
+    },
+    "market_trends": {
+      "trend_direction": "stable",
+      "momentum_score": 0.634,
+      "seasonal_pattern": "Strong Q4 peak driven by holiday gifting season (Nov/Dec +35-45%)",
+      "search_volume_trend": [
+        {
+          "month": "2025-05",
+          "value": 75766.0
+        },
+        {
+          "month": "2025-06",
+          "value": 68580.0
+        },
+        {
+          "month": "2025-07",
+          "value": 60640.0
+        },
+        {
+          "month": "2025-08",
+          "value": 56464.0
+        },
+        {
+          "month": "2025-09",
+          "value": 59100.0
+        },
+        {
+          "month": "2025-10",
+          "value": 62506.0
+        },
+        {
+          "month": "2025-11",
+          "value": 84628.0
+        },
+        {
+          "month": "2025-12",
+          "value": 126394.0
+        },
+        {
+          "month": "2026-01",
+          "value": 107015.0
+        },
+        {
+          "month": "2026-02",
+          "value": 83771.0
+        },
+        {
+          "month": "2026-03",
+          "value": 78028.0
+        },
+        {
+          "month": "2026-04",
+          "value": 71730.0
+        }
+      ],
+      "price_trend": [
+        {
+          "month": "2025-05",
+          "value": 935.31
+        },
+        {
+          "month": "2025-06",
+          "value": 971.48
+        },
+        {
+          "month": "2025-07",
+          "value": 976.44
+        },
+        {
+          "month": "2025-08",
+          "value": 978.33
+        },
+        {
+          "month": "2025-09",
+          "value": 936.12
+        },
+        {
+          "month": "2025-10",
+          "value": 905.81
+        },
+        {
+          "month": "2025-11",
+          "value": 930.77
+        },
+        {
+          "month": "2025-12",
+          "value": 952.34
+        },
+        {
+          "month": "2026-01",
+          "value": 964.28
+        },
+        {
+          "month": "2026-02",
+          "value": 929.59
+        },
+        {
+          "month": "2026-03",
+          "value": 950.71
+        },
+        {
+          "month": "2026-04",
+          "value": 997.53
+        }
+      ],
+      "forecast_summary": "Stable demand with seasonal peaks in Q4. Competitive pressure from Android flagships is steady. Price elasticity remains low in premium segment — market is unlikely to soften significantly in the next 6 months."
+    },
+    "recommendations": [
+      "Optimize marketing campaigns to emphasize the iPhone 16 Pro's premium build quality, performance, and camera capabilities to counterbalance negative perceptions of price.",
+      "Invest in targeted promotions during the Q4 holiday gifting season to capitalize on the strong seasonal peak and maintain market share.",
+      "Conduct a competitive pricing analysis to assess the potential impact of price adjustments on demand, considering the low price elasticity in the premium segment."
+    ],
+    "confidence_score": 0.8,
+    "generated_by": "llm",
+    "metadata": {
+      "tool_execution_ms": {
+        "product_collector": 100.3,
+        "sentiment_analyzer": 80.8,
+        "trend_analyzer": 121.8
+      },
+      "total_execution_ms": 303.8,
+      "tools_succeeded": 3,
+      "tools_failed": 0,
+      "warnings": []
+    }
+  },
+  "error": null
+}
