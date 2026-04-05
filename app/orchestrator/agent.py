@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import time
 from datetime import datetime, timezone
@@ -77,23 +78,40 @@ class MarketAnalysisAgent:
         )
 
         # ── Execute pipeline steps ────────────────────────────────────────────
-        for step in steps:
-            result = await self.executor.run_step(step, context)
-            context.add_tool_result(result)
+        # Step 0 (ProductCollector) always runs first — its output determines
+        # market_position and data_source, which downstream tools read from the
+        # blackboard. Once it completes, the remaining steps have no dependency
+        # on each other and run concurrently via asyncio.gather.
+        first_step = steps[0]
+        first_result = await self.executor.run_step(first_step, context)
+        context.add_tool_result(first_result)
 
-            if not result.success and not result.skipped and step.required:
-                context.completed_at = datetime.now(timezone.utc)
-                raise PipelineError(
-                    f"Required tool '{step.tool.name}' failed: {result.error}"
-                )
-            elif result.skipped:
-                msg = f"Optional tool '{step.tool.name}' skipped: no catalog data found — sentiment omitted"
-                context.warnings.append(msg)
-                logger.info("job=%s %s", job_id, msg)
-            elif not result.success:
-                msg = f"Optional tool '{step.tool.name}' failed (continuing): {result.error}"
-                context.warnings.append(msg)
-                logger.warning("job=%s %s", job_id, msg)
+        if not first_result.success and first_step.required:
+            context.completed_at = datetime.now(timezone.utc)
+            raise PipelineError(
+                f"Required tool '{first_step.tool.name}' failed: {first_result.error}"
+            )
+
+        remaining_steps = steps[1:]
+        if remaining_steps:
+            parallel_results = await asyncio.gather(
+                *[self.executor.run_step(step, context) for step in remaining_steps]
+            )
+            for step, result in zip(remaining_steps, parallel_results):
+                context.add_tool_result(result)
+                if not result.success and not result.skipped and step.required:
+                    context.completed_at = datetime.now(timezone.utc)
+                    raise PipelineError(
+                        f"Required tool '{step.tool.name}' failed: {result.error}"
+                    )
+                elif result.skipped:
+                    msg = f"Optional tool '{step.tool.name}' skipped: no catalog data found — sentiment omitted"
+                    context.warnings.append(msg)
+                    logger.info("job=%s %s", job_id, msg)
+                elif not result.success:
+                    msg = f"Optional tool '{step.tool.name}' failed (continuing): {result.error}"
+                    context.warnings.append(msg)
+                    logger.warning("job=%s %s", job_id, msg)
 
         # ── Validate minimum viable data ──────────────────────────────────────
         if not context.has_minimum_data:

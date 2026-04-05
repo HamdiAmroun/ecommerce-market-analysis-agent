@@ -536,10 +536,12 @@ Scale workers horizontally: `docker-compose scale worker=10`
 
 #### 6.2 Tool Parallelisation
 
-In the current implementation all three tools run sequentially. That was a deliberate choice for the prototype - a linear for-loop makes the control flow obvious when reading the code, which was the priority here.
+`ProductCollector` runs first — its output determines `market_position` and `data_source`, which the downstream tools read from the shared context. 
+Once it completes, `SentimentAnalyzer` and `TrendAnalyzer` have no dependency on each other and run concurrently via `asyncio.gather`.
 
-In production, `SentimentAnalyzer` and `TrendAnalyzer` have **no data dependency on each other** - both only need the initial request. So once `ProductCollector` completes, the other two can run concurrently with `asyncio.gather`. 
-That alone cuts the sequential portion of the pipeline from three tool latencies to two, which matters once the tools are hitting real APIs with real network latency.
+This is already implemented in `app/orchestrator/agent.py`. 
+
+With mocked tools the time saving is negligible, but with real scrapers and API calls (each taking 1–3 seconds) running them concurrently cuts the pipeline wall time from three tool latencies to two.
 
 #### 6.3 LLM Prompt Optimization and Caching Strategy
 
