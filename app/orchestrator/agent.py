@@ -7,6 +7,8 @@ from app.llm.client import LLMClient, LLMError
 from app.models.requests import AnalysisRequest
 from app.models.responses import (
     CompetitorSummary,
+    DeepAnalysisSection,
+    EnrichedRecommendation,
     MarketReport,
     MonthlyDataPoint,
     PlatformPrice,
@@ -79,11 +81,15 @@ class MarketAnalysisAgent:
             result = await self.executor.run_step(step, context)
             context.add_tool_result(result)
 
-            if not result.success and step.required:
+            if not result.success and not result.skipped and step.required:
                 context.completed_at = datetime.now(timezone.utc)
                 raise PipelineError(
                     f"Required tool '{step.tool.name}' failed: {result.error}"
                 )
+            elif result.skipped:
+                msg = f"Optional tool '{step.tool.name}' skipped: no catalog data found — sentiment omitted"
+                context.warnings.append(msg)
+                logger.info("job=%s %s", job_id, msg)
             elif not result.success:
                 msg = f"Optional tool '{step.tool.name}' failed (continuing): {result.error}"
                 context.warnings.append(msg)
@@ -111,10 +117,30 @@ class MarketAnalysisAgent:
 
     # ── Synthesis ─────────────────────────────────────────────────────────────
     async def _synthesize_report(self, context: AnalysisContext, elapsed_s: float) -> MarketReport:
-        """Try LLM synthesis; fall back to deterministic if LLM unavailable or fails."""
+        """Try LLM synthesis; fall back to deterministic if LLM unavailable or fails.
+
+        Deep mode runs two LLM passes:
+          1. extract_competitive_signals() — short focused call on product/competitor
+             data only, producing a competitive_context string stored on the context.
+          2. synthesize_report() — full synthesis using all tool data plus the
+             pre-extracted signals, requesting the richer deep_analysis schema.
+        Standard mode is a single synthesis call, unchanged.
+        """
+        is_deep = context.request.analysis_depth == "deep"
+
         if self.llm.available:
             try:
-                llm_data = await self.llm.synthesize_report(context)
+                # Pass 1 (deep only): extract intermediate competitive signals
+                competitive_context = ""
+                if is_deep:
+                    competitive_context = await self.llm.extract_competitive_signals(context)
+
+                # Pass 2: full synthesis (deep uses richer prompt + schema)
+                llm_data = await self.llm.synthesize_report(
+                    context,
+                    deep=is_deep,
+                    competitive_context=competitive_context,
+                )
                 return self._build_report(context, llm_data, "llm", elapsed_s)
             except LLMError as exc:
                 msg = f"LLM synthesis failed, using deterministic fallback: {exc}"
@@ -144,14 +170,21 @@ class MarketAnalysisAgent:
         trend_section = self._build_trend_section(context)
         metadata = self._build_metadata(context, elapsed_s)
 
+        is_deep = context.request.analysis_depth == "deep"
+        deep_analysis: DeepAnalysisSection | None = None
+
         if llm_data:
             executive_summary = llm_data.get("executive_summary", self._fallback_summary(context))
             recommendations = llm_data.get("recommendations") or self._fallback_recommendations(context)
             confidence_score = float(llm_data.get("confidence_score", 0.75))
+            if is_deep and "deep_analysis" in llm_data:
+                deep_analysis = self._parse_deep_analysis(llm_data["deep_analysis"])
         else:
             executive_summary = self._fallback_summary(context)
             recommendations = self._fallback_recommendations(context)
             confidence_score = self._calculate_confidence(context)
+            if is_deep:
+                deep_analysis = self._fallback_deep_analysis(context)
 
         return MarketReport(
             executive_summary=executive_summary,
@@ -162,6 +195,7 @@ class MarketAnalysisAgent:
             confidence_score=round(min(1.0, max(0.0, confidence_score)), 3),
             generated_by=generated_by,
             metadata=metadata,
+            deep_analysis=deep_analysis,
         )
 
     # ── Section builders ──────────────────────────────────────────────────────
@@ -256,12 +290,14 @@ class MarketAnalysisAgent:
             for name, r in context.tool_results.items()
         }
         succeeded = sum(1 for r in context.tool_results.values() if r.success)
-        failed = len(context.tool_results) - succeeded
+        skipped = sum(1 for r in context.tool_results.values() if r.skipped)
+        failed = len(context.tool_results) - succeeded - skipped
         return ReportMetadata(
             tool_execution_ms=tool_times,
             total_execution_ms=round(elapsed_s * 1000, 1),
             tools_succeeded=succeeded,
             tools_failed=failed,
+            tools_skipped=skipped,
             warnings=context.warnings,
         )
 
@@ -359,3 +395,128 @@ class MarketAnalysisAgent:
         base = succeeded / max(total, 1)
         # Slight penalty for no LLM synthesis
         return round(base * 0.85, 3)
+
+    # ── Deep mode helpers ─────────────────────────────────────────────────────
+    def _parse_deep_analysis(self, raw: dict) -> DeepAnalysisSection | None:
+        """Parse LLM deep_analysis block into typed model; returns None on malformed data."""
+        try:
+            enriched = [
+                EnrichedRecommendation(
+                    text=r["text"],
+                    priority=r.get("priority", "medium"),
+                    rationale=r.get("rationale", ""),
+                )
+                for r in raw.get("enriched_recommendations", [])[:5]
+            ]
+            return DeepAnalysisSection(
+                key_risks=raw.get("key_risks", ["Insufficient data to identify risks"])[:3],
+                market_opportunities=raw.get("market_opportunities", ["Insufficient data"])[:3],
+                enriched_recommendations=enriched or [
+                    EnrichedRecommendation(
+                        text="Monitor competitive landscape and adjust pricing accordingly.",
+                        priority="medium",
+                        rationale="Fallback recommendation — LLM deep_analysis block was incomplete.",
+                    )
+                ],
+            )
+        except Exception:
+            return None
+
+    def _fallback_deep_analysis(self, context: AnalysisContext) -> DeepAnalysisSection:
+        """Deterministic deep analysis section when LLM is unavailable."""
+        product = context.get_tool_data("product_collector") or {}
+        sentiment = context.get_tool_data("sentiment_analyzer") or {}
+        trends = context.get_tool_data("trend_analyzer") or {}
+
+        position = product.get("market_position", "mid-range")
+        competitors = product.get("competitors", [])
+        direction = trends.get("trend_direction", "stable")
+        neg_themes = [t for t in sentiment.get("themes", []) if t["sentiment"] == "negative"]
+        momentum = trends.get("momentum_score", 0.5)
+
+        # Key risks
+        risks: list[str] = []
+        if competitors:
+            cheapest = min(competitors, key=lambda c: c["price"])
+            risks.append(
+                f"Price competition from {cheapest['name']} (${cheapest['price']:.2f}) "
+                "could erode market share if value perception weakens."
+            )
+        if neg_themes:
+            risks.append(
+                f"Persistent negative sentiment around '{neg_themes[0]['theme']}' "
+                "may suppress repeat purchase rate if unaddressed."
+            )
+        if direction == "declining":
+            risks.append("Declining market momentum signals weakening demand — "
+                         "risk of inventory build-up without promotional intervention.")
+        if not risks:
+            risks.append("Competitive intensity in this category remains elevated — "
+                         "monitor pricing weekly to avoid positioning drift.")
+
+        # Opportunities
+        opportunities: list[str] = []
+        if direction == "rising":
+            opportunities.append(
+                "Rising momentum creates a window to expand distribution channels "
+                "and capture share before competitors respond."
+            )
+        if trends.get("seasonal_pattern"):
+            opportunities.append(
+                f"Seasonal pattern ({trends['seasonal_pattern'][:60]}...) offers "
+                "predictable windows for promotional uplift and inventory pre-positioning."
+            )
+        if position == "premium" and momentum > 0.65:
+            opportunities.append(
+                "Strong momentum in the premium segment supports a limited-edition "
+                "variant strategy to test price ceiling and drive PR coverage."
+            )
+        if not opportunities:
+            opportunities.append(
+                "Stable demand with consistent search volume provides a reliable "
+                "baseline for performance marketing optimisation."
+            )
+
+        # Enriched recommendations with priority
+        enriched: list[EnrichedRecommendation] = []
+        if neg_themes:
+            enriched.append(EnrichedRecommendation(
+                text=f"Resolve top complaint '{neg_themes[0]['theme']}' via product update or messaging fix.",
+                priority="high",
+                rationale=f"'{neg_themes[0]['theme']}' is the highest-frequency negative theme — "
+                          "directly impacts conversion and repeat purchase.",
+            ))
+        if position == "premium" and competitors:
+            cheapest = min(competitors, key=lambda c: c["price"])
+            enriched.append(EnrichedRecommendation(
+                text=f"Reinforce value vs. {cheapest['name']} through bundled offers or warranty extension.",
+                priority="high",
+                rationale=f"Price gap vs. cheapest competitor (${cheapest['price']:.2f}) is the primary "
+                          "switching incentive — reducing it perceptually protects margin.",
+            ))
+        if direction == "rising":
+            enriched.append(EnrichedRecommendation(
+                text="Increase paid search budget during rising demand phase.",
+                priority="medium",
+                rationale=f"Momentum score of {momentum:.2f} indicates above-average demand growth — "
+                          "incremental spend now yields above-average return.",
+            ))
+        if direction == "declining":
+            enriched.append(EnrichedRecommendation(
+                text="Introduce time-limited promotional pricing to defend volume.",
+                priority="high",
+                rationale=f"Declining trend with momentum {momentum:.2f} signals shrinking organic demand — "
+                          "price promotion is the fastest lever to maintain sell-through.",
+            ))
+        enriched.append(EnrichedRecommendation(
+            text="Audit and optimise product listings across all top platforms.",
+            priority="low",
+            rationale="Platform listing quality directly affects organic ranking and conversion rate "
+                      "independent of market conditions.",
+        ))
+
+        return DeepAnalysisSection(
+            key_risks=risks[:3],
+            market_opportunities=opportunities[:3],
+            enriched_recommendations=enriched[:5],
+        )

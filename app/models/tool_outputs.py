@@ -11,6 +11,7 @@ class ToolResult(BaseModel):
     success: bool
     data: dict[str, Any] = Field(default_factory=dict)
     error: str | None = None
+    skipped: bool = False  # True when a skip_if condition prevented execution
     execution_time_ms: float = 0.0
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -39,6 +40,7 @@ class ProductData(BaseModel):
     price_range_min: float
     price_range_max: float
     market_position: Literal["budget", "mid-range", "premium"]
+    data_source: Literal["catalog", "generic"] = "catalog"  # drives dynamic skip decisions downstream
 
 
 # ── Sentiment analyzer outputs ────────────────────────────────────────────────

@@ -5,9 +5,9 @@ from app.llm.schemas import schema_as_string
 if TYPE_CHECKING:
     from app.orchestrator.context import AnalysisContext
 
-# Response schema injected into every synthesis prompt, so the model knows
-# exactly what shape to produce. Loaded once at import time.
+# Schemas loaded once at import time — avoids repeated disk reads per request.
 _SYNTHESIS_SCHEMA = schema_as_string("report_synthesis.json")
+_DEEP_SYNTHESIS_SCHEMA = schema_as_string("deep_synthesis.json")
 
 
 def build_synthesis_prompt(context: "AnalysisContext") -> str:
@@ -90,5 +90,50 @@ def build_synthesis_prompt(context: "AnalysisContext") -> str:
     # ── Response schema ───────────────────────────────────────────────────────
     lines.append("Respond with a JSON object matching this schema exactly:")
     lines.append(_SYNTHESIS_SCHEMA)
+
+    return "\n".join(lines)
+
+
+def build_deep_synthesis_prompt(context: "AnalysisContext", competitive_context: str = "") -> str:
+    """
+    Extended prompt for deep analysis mode.
+
+    Builds on the standard prompt but requests a richer output:
+    - Structured recommendations with priority (high/medium/low) and rationale
+    - Key market risks (max 3, grounded in the data)
+    - Market opportunities (max 3, actionable)
+
+    If an intermediate competitive_context string was produced by a prior LLM
+    enrichment pass, it is injected as an additional input section so the final
+    synthesis can build on those pre-extracted signals.
+    """
+    # Start from the standard compressed data block (reuse existing logic)
+    base = build_synthesis_prompt(context)
+    # Strip the trailing schema instruction — we replace it with the deep schema
+    base = base[: base.rfind("Respond with a JSON object")].rstrip()
+
+    lines = [base, ""]
+
+    # ── Inject intermediate competitive signals if available ──────────────────
+    if competitive_context:
+        lines.append("=== PRE-EXTRACTED COMPETITIVE SIGNALS ===")
+        lines.append(competitive_context)
+        lines.append("")
+
+    # ── Deep mode instructions ────────────────────────────────────────────────
+    lines.append("=== DEEP ANALYSIS INSTRUCTIONS ===")
+    lines.append(
+        "This is a DEEP analysis. In addition to the standard summary and recommendations, "
+        "you must produce a deep_analysis section containing:"
+    )
+    lines.append("- key_risks: up to 3 specific risks grounded in the data (not generic statements)")
+    lines.append("- market_opportunities: up to 3 concrete opportunities tied to the data")
+    lines.append(
+        "- enriched_recommendations: up to 5 recommendations each with a priority "
+        "(high/medium/low) and a one-sentence rationale citing a specific data point"
+    )
+    lines.append("")
+    lines.append("Respond with a JSON object matching this schema exactly:")
+    lines.append(_DEEP_SYNTHESIS_SCHEMA)
 
     return "\n".join(lines)

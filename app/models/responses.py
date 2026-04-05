@@ -69,7 +69,21 @@ class ReportMetadata(BaseModel):
     total_execution_ms: float
     tools_succeeded: int
     tools_failed: int
+    tools_skipped: int = 0
     warnings: list[str]
+
+
+# ── Deep mode extras ─────────────────────────────────────────────────────────
+class EnrichedRecommendation(BaseModel):
+    text: str
+    priority: Literal["high", "medium", "low"]
+    rationale: str  # one sentence tying the recommendation back to the data
+
+
+class DeepAnalysisSection(BaseModel):
+    key_risks: list[str] = Field(min_length=1, max_length=3)
+    market_opportunities: list[str] = Field(min_length=1, max_length=3)
+    enriched_recommendations: list[EnrichedRecommendation] = Field(min_length=1, max_length=5)
 
 
 # ── Top-level report ──────────────────────────────────────────────────────────
@@ -85,6 +99,10 @@ class MarketReport(BaseModel):
     confidence_score: float = Field(ge=0.0, le=1.0)
     generated_by: Literal["llm", "fallback"]
     metadata: ReportMetadata
+    deep_analysis: "DeepAnalysisSection | None" = Field(
+        default=None,
+        description="Only present when analysis_depth='deep'",
+    )
 
 
 # ── Job-level response ────────────────────────────────────────────────────────

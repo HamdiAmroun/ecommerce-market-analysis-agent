@@ -126,3 +126,87 @@ class TestAgentMetadata:
     async def test_metadata_tools_succeeded_count(self, agent, sample_request):
         context = await agent.run(sample_request, job_id="test-meta-03")
         assert context.report.metadata.tools_succeeded >= 2
+
+
+class TestAgentDeepMode:
+    async def test_deep_mode_returns_report(self, agent):
+        from app.models.requests import AnalysisRequest
+        req = AnalysisRequest(
+            product_name="iPhone 16 Pro",
+            category="consumer electronics",
+            analysis_depth="deep",
+        )
+        context = await agent.run(req, job_id="test-deep-01")
+        assert context.report is not None
+
+    async def test_deep_mode_has_deep_analysis_section(self, agent):
+        from app.models.requests import AnalysisRequest
+        req = AnalysisRequest(
+            product_name="iPhone 16 Pro",
+            category="consumer electronics",
+            analysis_depth="deep",
+        )
+        context = await agent.run(req, job_id="test-deep-02")
+        # Without LLM key, falls back to deterministic deep analysis
+        assert context.report.deep_analysis is not None
+
+    async def test_deep_analysis_has_risks(self, agent):
+        from app.models.requests import AnalysisRequest
+        req = AnalysisRequest(
+            product_name="iPhone 16 Pro",
+            category="consumer electronics",
+            analysis_depth="deep",
+        )
+        context = await agent.run(req, job_id="test-deep-03")
+        assert len(context.report.deep_analysis.key_risks) >= 1
+
+    async def test_deep_analysis_has_opportunities(self, agent):
+        from app.models.requests import AnalysisRequest
+        req = AnalysisRequest(
+            product_name="iPhone 16 Pro",
+            category="consumer electronics",
+            analysis_depth="deep",
+        )
+        context = await agent.run(req, job_id="test-deep-04")
+        assert len(context.report.deep_analysis.market_opportunities) >= 1
+
+    async def test_deep_analysis_enriched_recommendations_have_priority(self, agent):
+        from app.models.requests import AnalysisRequest
+        req = AnalysisRequest(
+            product_name="iPhone 16 Pro",
+            category="consumer electronics",
+            analysis_depth="deep",
+        )
+        context = await agent.run(req, job_id="test-deep-05")
+        for rec in context.report.deep_analysis.enriched_recommendations:
+            assert rec.priority in ("high", "medium", "low")
+            assert len(rec.rationale) > 0
+
+    async def test_standard_mode_has_no_deep_analysis(self, agent, sample_request):
+        context = await agent.run(sample_request, job_id="test-deep-06")
+        assert context.report.deep_analysis is None
+
+
+class TestAgentDynamicSkip:
+    async def test_unknown_product_skips_sentiment(self, agent, unknown_product_request):
+        """Generic (non-catalog) product should trigger skip_if and omit sentiment."""
+        context = await agent.run(unknown_product_request, job_id="test-skip-01")
+        sentiment_result = context.tool_results.get("sentiment_analyzer")
+        assert sentiment_result is not None
+        assert sentiment_result.skipped is True
+
+    async def test_skipped_tool_adds_warning(self, agent, unknown_product_request):
+        context = await agent.run(unknown_product_request, job_id="test-skip-02")
+        assert any("skipped" in w.lower() for w in context.warnings)
+
+    async def test_skipped_tool_counted_in_metadata(self, agent, unknown_product_request):
+        context = await agent.run(unknown_product_request, job_id="test-skip-03")
+        assert context.report.metadata.tools_skipped == 1
+
+    async def test_known_product_does_not_skip_sentiment(self, agent, sample_request):
+        """Catalog product should NOT trigger the skip condition."""
+        context = await agent.run(sample_request, job_id="test-skip-04")
+        sentiment_result = context.tool_results.get("sentiment_analyzer")
+        assert sentiment_result is not None
+        assert sentiment_result.skipped is False
+        assert sentiment_result.success is True

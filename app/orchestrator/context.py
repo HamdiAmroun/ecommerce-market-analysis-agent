@@ -41,7 +41,8 @@ class AnalysisContext:
     # ── Convenience accessors ─────────────────────────────────────────────────
     def add_tool_result(self, result: ToolResult) -> None:
         self.tool_results[result.tool_name] = result
-        if not result.success:
+        # Skipped tools are not failures — don't pollute the error list
+        if not result.success and not result.skipped:
             self.errors.append(f"{result.tool_name}: {result.error}")
 
     @property
@@ -50,12 +51,16 @@ class AnalysisContext:
 
     @property
     def has_minimum_data(self) -> bool:
-        """Report can still be generated if at least 2 of 3 tools succeeded."""
+        """Report can be generated if at least 2 tools succeeded (skipped ≠ failed)."""
         return sum(1 for r in self.tool_results.values() if r.success) >= 2
 
     @property
     def successful_tool_names(self) -> list[str]:
         return [name for name, r in self.tool_results.items() if r.success]
+
+    @property
+    def skipped_tool_names(self) -> list[str]:
+        return [name for name, r in self.tool_results.items() if r.skipped]
 
     def get_tool_data(self, tool_name: str) -> dict | None:
         result = self.tool_results.get(tool_name)

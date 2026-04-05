@@ -1,4 +1,5 @@
 import asyncio
+import hashlib
 from typing import TYPE_CHECKING, Any
 
 from app.models.tool_outputs import CompetitorInfo, PlatformListing, ProductData, ToolResult
@@ -161,10 +162,11 @@ class ProductCollectorTool(BaseTool):
             price_range_min=min(prices),
             price_range_max=max(prices),
             market_position=raw["market_position"],
+            data_source="catalog",
         )
 
     def _generate_generic(self, product_name: str, category: str) -> ProductData:
-        seed = abs(hash(product_name.lower())) % 1000
+        seed = int(hashlib.md5(product_name.lower().encode()).hexdigest(), 16) % 1000
         cat = CATEGORY_DEFAULTS.get(category.lower(), CATEGORY_DEFAULTS["_default"])
 
         base_price = cat["price_base"] + (seed / 1000) * cat["price_variance"]
@@ -201,4 +203,5 @@ class ProductCollectorTool(BaseTool):
             price_range_min=min(prices),
             price_range_max=max(prices),
             market_position=pos,
+            data_source="generic",
         )

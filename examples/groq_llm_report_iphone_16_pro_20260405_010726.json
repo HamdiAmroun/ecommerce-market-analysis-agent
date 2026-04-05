@@ -1,0 +1,227 @@
+{
+  "job_id": "79ba41f3-a215-4516-a605-9849715f1f5f",
+  "status": "completed",
+  "product_name": "iPhone 16 Pro",
+  "category": "consumer electronics",
+  "target_market": "global",
+  "analysis_depth": "standard",
+  "created_at": "2026-04-04T23:07:29.399748Z",
+  "completed_at": "2026-04-04T23:07:29.399748Z",
+  "report": {
+    "executive_summary": "The iPhone 16 Pro holds a strong position in the premium consumer electronics segment, with a competitive price point and positive customer sentiment driven by performance, camera quality, and build quality, despite concerns over battery life and price.",
+    "product_analysis": {
+      "average_price": 1019.25,
+      "price_range_min": 979.0,
+      "price_range_max": 1099.0,
+      "market_position": "premium",
+      "competitor_count": 3,
+      "top_platforms": [
+        {
+          "platform": "Amazon",
+          "price": 999.99,
+          "currency": "USD"
+        },
+        {
+          "platform": "Best Buy",
+          "price": 999.0,
+          "currency": "USD"
+        },
+        {
+          "platform": "eBay (new)",
+          "price": 979.0,
+          "currency": "USD"
+        },
+        {
+          "platform": "Apple Store",
+          "price": 1099.0,
+          "currency": "USD"
+        }
+      ],
+      "top_competitors": [
+        {
+          "name": "Samsung Galaxy S25 Ultra",
+          "price": 1299.99,
+          "market_share_pct": 28.0
+        },
+        {
+          "name": "Google Pixel 9 Pro",
+          "price": 999.0,
+          "market_share_pct": 8.0
+        },
+        {
+          "name": "OnePlus 13",
+          "price": 899.0,
+          "market_share_pct": 3.5
+        }
+      ]
+    },
+    "sentiment_analysis": {
+      "overall_score": 0.53,
+      "label": "mixed",
+      "review_count": 41586,
+      "top_themes": [
+        {
+          "theme": "performance",
+          "sentiment": "positive",
+          "frequency": 1460
+        },
+        {
+          "theme": "camera quality",
+          "sentiment": "positive",
+          "frequency": 1417
+        },
+        {
+          "theme": "build quality",
+          "sentiment": "positive",
+          "frequency": 997
+        },
+        {
+          "theme": "ecosystem integration",
+          "sentiment": "positive",
+          "frequency": 963
+        },
+        {
+          "theme": "display quality",
+          "sentiment": "positive",
+          "frequency": 827
+        },
+        {
+          "theme": "software updates",
+          "sentiment": "positive",
+          "frequency": 713
+        }
+      ],
+      "sample_positive": "Premium build quality — feels solid and well-crafted in hand.",
+      "sample_negative": "iCloud storage upselling gets tiresome. Base 128GB fills up fast."
+    },
+    "market_trends": {
+      "trend_direction": "rising",
+      "momentum_score": 0.731,
+      "seasonal_pattern": "Strong Q4 peak driven by holiday gifting season (Nov/Dec +35-45%)",
+      "search_volume_trend": [
+        {
+          "month": "2025-05",
+          "value": 78158.0
+        },
+        {
+          "month": "2025-06",
+          "value": 71082.0
+        },
+        {
+          "month": "2025-07",
+          "value": 67542.0
+        },
+        {
+          "month": "2025-08",
+          "value": 63695.0
+        },
+        {
+          "month": "2025-09",
+          "value": 66503.0
+        },
+        {
+          "month": "2025-10",
+          "value": 78270.0
+        },
+        {
+          "month": "2025-11",
+          "value": 119451.0
+        },
+        {
+          "month": "2025-12",
+          "value": 183982.0
+        },
+        {
+          "month": "2026-01",
+          "value": 155703.0
+        },
+        {
+          "month": "2026-02",
+          "value": 129835.0
+        },
+        {
+          "month": "2026-03",
+          "value": 122993.0
+        },
+        {
+          "month": "2026-04",
+          "value": 115117.0
+        }
+      ],
+      "price_trend": [
+        {
+          "month": "2025-05",
+          "value": 998.5
+        },
+        {
+          "month": "2025-06",
+          "value": 1017.53
+        },
+        {
+          "month": "2025-07",
+          "value": 1018.06
+        },
+        {
+          "month": "2025-08",
+          "value": 1021.16
+        },
+        {
+          "month": "2025-09",
+          "value": 1071.31
+        },
+        {
+          "month": "2025-10",
+          "value": 1126.56
+        },
+        {
+          "month": "2025-11",
+          "value": 1171.74
+        },
+        {
+          "month": "2025-12",
+          "value": 1139.08
+        },
+        {
+          "month": "2026-01",
+          "value": 1164.08
+        },
+        {
+          "month": "2026-02",
+          "value": 1223.84
+        },
+        {
+          "month": "2026-03",
+          "value": 1276.43
+        },
+        {
+          "month": "2026-04",
+          "value": 1216.28
+        }
+      ],
+      "forecast_summary": "Stable demand with seasonal peaks in Q4. Competitive pressure from Android flagships is steady. Price elasticity remains low in premium segment — market is unlikely to soften significantly in the next 6 months."
+    },
+    "recommendations": [
+      "Optimize pricing strategy to maintain competitiveness, particularly against the Samsung Galaxy S25 Ultra, by potentially offering limited-time discounts or bundle deals to incentivize sales.",
+      "Invest in targeted marketing campaigns highlighting the iPhone 16 Pro's superior build quality, camera capabilities, and performance to counterbalance negative perceptions of battery life and pricing.",
+      "Enhance customer experience by addressing iCloud storage concerns, such as offering more generous base storage options or competitive cloud storage pricing, to reduce negative reviews and improve overall customer satisfaction.",
+      "Leverage the strong Q4 seasonal peak driven by holiday gifting to launch strategic promotional activities, including special edition models or accessories, to capitalize on increased demand and drive sales.",
+      "Monitor competitive pressure from Android flagships, such as the Google Pixel 9 Pro and OnePlus 13, and adjust marketing and pricing strategies accordingly to maintain market share and brand loyalty."
+    ],
+    "confidence_score": 0.85,
+    "generated_by": "llm",
+    "metadata": {
+      "tool_execution_ms": {
+        "product_collector": 112.3,
+        "sentiment_analyzer": 92.0,
+        "trend_analyzer": 124.6
+      },
+      "total_execution_ms": 329.0,
+      "tools_succeeded": 3,
+      "tools_failed": 0,
+      "tools_skipped": 0,
+      "warnings": []
+    },
+    "deep_analysis": null
+  },
+  "error": null
+}

@@ -30,6 +30,22 @@ class ToolExecutor:
         tool_name = step.tool.name
         job_id = context.job_id
 
+        # ── Dynamic skip decision ─────────────────────────────────────────────
+        # Evaluated after prior steps have written their results to the context,
+        # so skip_if can inspect real intermediate data (not just the request).
+        if step.skip_if is not None and step.skip_if(context):
+            logger.info(
+                "Tool skipped (condition met) | job=%s tool=%s",
+                job_id,
+                tool_name,
+            )
+            return ToolResult(
+                tool_name=tool_name,
+                success=False,
+                skipped=True,
+                data={},
+            )
+
         for attempt in range(self.settings.max_retries + 1):
             if attempt > 0:
                 logger.warning(

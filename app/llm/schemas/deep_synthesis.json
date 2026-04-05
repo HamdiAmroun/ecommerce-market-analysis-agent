@@ -1,0 +1,22 @@
+{
+  "executive_summary": "<string: max 120 words, dense insight-driven summary>",
+  "recommendations": [
+    "<string: actionable recommendation tied to the data>"
+  ],
+  "confidence_score": "<float 0.0-1.0: reflects data completeness>",
+  "deep_analysis": {
+    "key_risks": [
+      "<string: specific market or competitive risk, max 3>"
+    ],
+    "market_opportunities": [
+      "<string: concrete opportunity grounded in the data, max 3>"
+    ],
+    "enriched_recommendations": [
+      {
+        "text": "<string: concrete actionable recommendation>",
+        "priority": "<high | medium | low>",
+        "rationale": "<string: one sentence linking this recommendation to a specific data point>"
+      }
+    ]
+  }
+}

@@ -24,6 +24,9 @@ env/
 htmlcov/
 coverage.xml
 
+# Development assistant config and local testing docs (not part of deliverable)
+CLAUDE.md
+
 # IDE
 .idea/
 .vscode/

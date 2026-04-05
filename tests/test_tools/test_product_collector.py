@@ -91,3 +91,24 @@ class TestProductCollectorUnknownProduct:
         result = await tool._safe_execute(ctx)
         assert result.success is True
         assert result.data["category"] == "athletic footwear"
+
+
+class TestProductCollectorDataSource:
+    async def test_known_product_has_catalog_source(self, tool):
+        ctx = _make_context("iPhone 16 Pro")
+        result = await tool._safe_execute(ctx)
+        assert result.data["data_source"] == "catalog"
+
+    async def test_unknown_product_has_generic_source(self, tool):
+        ctx = _make_context("XyloGadget Pro 3000")
+        result = await tool._safe_execute(ctx)
+        assert result.data["data_source"] == "generic"
+
+    async def test_stable_hash_across_calls(self, tool):
+        """md5-based seed must produce identical output on every call."""
+        ctx1 = _make_context("Mystery Widget X")
+        ctx2 = _make_context("Mystery Widget X")
+        r1 = await tool._safe_execute(ctx1)
+        r2 = await tool._safe_execute(ctx2)
+        assert r1.data["average_price"] == r2.data["average_price"]
+        assert r1.data["data_source"] == r2.data["data_source"]

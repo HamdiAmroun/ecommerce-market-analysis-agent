@@ -1,4 +1,5 @@
 import asyncio
+import hashlib
 import random
 from datetime import date
 from typing import TYPE_CHECKING, Any
@@ -117,7 +118,7 @@ class TrendAnalyzerTool(BaseTool):
             context.request.category.lower(),
             TREND_PROFILES["_default"],
         )
-        seed = abs(hash(context.request.product_name.lower())) % 10_000
+        seed = int(hashlib.md5(context.request.product_name.lower().encode()).hexdigest(), 16) % 10_000
         rng = random.Random(seed)
 
         momentum_lo, momentum_hi = profile["momentum_range"]
@@ -125,15 +126,32 @@ class TrendAnalyzerTool(BaseTool):
 
         direction = _determine_direction(profile, seed)
 
+        # ── Cross-tool influence: read ProductCollector output from blackboard ─
+        # Use the product's actual average price (not the category baseline) so
+        # the price trend series reflects this product's real market positioning.
+        # Premium products also show amplified seasonal peaks — gift-driven demand
+        # spikes are stronger for high-ticket items.
+        product_data = context.get_tool_data("product_collector")
+        actual_price_base = profile["base_price"]
+        seasonal_multipliers = list(profile["seasonal_multipliers"])
+        if product_data:
+            actual_price_base = product_data.get("average_price", profile["base_price"])
+            if product_data.get("market_position") == "premium":
+                # Amplify peaks >1.0 by 8% — premium products ride seasonal demand harder
+                seasonal_multipliers = [
+                    round(m * 1.08, 3) if m > 1.0 else m
+                    for m in seasonal_multipliers
+                ]
+
         search_series = self._generate_series(
             base=profile["base_search_volume"],
-            multipliers=profile["seasonal_multipliers"],
+            multipliers=seasonal_multipliers,
             direction=direction,
             rng=rng,
             is_price=False,
         )
         price_series = self._generate_series(
-            base=profile["base_price"],
+            base=actual_price_base,
             multipliers=[1.0] * 12,  # price doesn't follow seasonal pattern as strongly
             direction=direction,
             rng=rng,

@@ -1,0 +1,247 @@
+{
+  "job_id": "f3cf22d2-9e57-4ade-bf6e-eb820713c549",
+  "status": "completed",
+  "product_name": "MacBook Pro 14",
+  "category": "consumer electronics",
+  "target_market": "global",
+  "analysis_depth": "deep",
+  "created_at": "2026-04-04T23:07:29.731171Z",
+  "completed_at": "2026-04-04T23:07:29.731171Z",
+  "report": {
+    "executive_summary": "MacBook Pro 14 is a premium-positioned product in the consumer electronics market, averaging $1982.66 across 3 platforms. It faces 3 direct competitors. Customer sentiment is mixed based on 14,731 reviews. Market demand is stable with a momentum score of 0.70/1.00.",
+    "product_analysis": {
+      "average_price": 1982.66,
+      "price_range_min": 1949.99,
+      "price_range_max": 1999.0,
+      "market_position": "premium",
+      "competitor_count": 3,
+      "top_platforms": [
+        {
+          "platform": "Apple Store",
+          "price": 1999.0,
+          "currency": "USD"
+        },
+        {
+          "platform": "Amazon",
+          "price": 1949.99,
+          "currency": "USD"
+        },
+        {
+          "platform": "Best Buy",
+          "price": 1999.0,
+          "currency": "USD"
+        }
+      ],
+      "top_competitors": [
+        {
+          "name": "Dell XPS 15",
+          "price": 1799.99,
+          "market_share_pct": 12.0
+        },
+        {
+          "name": "Lenovo ThinkPad X1 Carbon",
+          "price": 1649.0,
+          "market_share_pct": 10.0
+        },
+        {
+          "name": "Microsoft Surface Laptop 6",
+          "price": 1699.0,
+          "market_share_pct": 7.0
+        }
+      ]
+    },
+    "sentiment_analysis": {
+      "overall_score": 0.488,
+      "label": "mixed",
+      "review_count": 14731,
+      "top_themes": [
+        {
+          "theme": "performance",
+          "sentiment": "positive",
+          "frequency": 1537
+        },
+        {
+          "theme": "camera quality",
+          "sentiment": "positive",
+          "frequency": 1449
+        },
+        {
+          "theme": "build quality",
+          "sentiment": "positive",
+          "frequency": 1046
+        },
+        {
+          "theme": "ecosystem integration",
+          "sentiment": "positive",
+          "frequency": 747
+        },
+        {
+          "theme": "display quality",
+          "sentiment": "positive",
+          "frequency": 841
+        },
+        {
+          "theme": "software updates",
+          "sentiment": "positive",
+          "frequency": 551
+        }
+      ],
+      "sample_positive": "Absolutely blown away by the camera system. Night mode photos look professional.",
+      "sample_negative": "Runs warm during gaming sessions. Not a dealbreaker but noticeable."
+    },
+    "market_trends": {
+      "trend_direction": "stable",
+      "momentum_score": 0.698,
+      "seasonal_pattern": "Strong Q4 peak driven by holiday gifting season (Nov/Dec +35-45%)",
+      "search_volume_trend": [
+        {
+          "month": "2025-05",
+          "value": 73843.0
+        },
+        {
+          "month": "2025-06",
+          "value": 63735.0
+        },
+        {
+          "month": "2025-07",
+          "value": 61290.0
+        },
+        {
+          "month": "2025-08",
+          "value": 57981.0
+        },
+        {
+          "month": "2025-09",
+          "value": 59294.0
+        },
+        {
+          "month": "2025-10",
+          "value": 64446.0
+        },
+        {
+          "month": "2025-11",
+          "value": 94669.0
+        },
+        {
+          "month": "2025-12",
+          "value": 141564.0
+        },
+        {
+          "month": "2026-01",
+          "value": 116001.0
+        },
+        {
+          "month": "2026-02",
+          "value": 91984.0
+        },
+        {
+          "month": "2026-03",
+          "value": 84432.0
+        },
+        {
+          "month": "2026-04",
+          "value": 80854.0
+        }
+      ],
+      "price_trend": [
+        {
+          "month": "2025-05",
+          "value": 2015.88
+        },
+        {
+          "month": "2025-06",
+          "value": 1984.21
+        },
+        {
+          "month": "2025-07",
+          "value": 2041.85
+        },
+        {
+          "month": "2025-08",
+          "value": 1943.47
+        },
+        {
+          "month": "2025-09",
+          "value": 2027.23
+        },
+        {
+          "month": "2025-10",
+          "value": 1997.26
+        },
+        {
+          "month": "2025-11",
+          "value": 2047.32
+        },
+        {
+          "month": "2025-12",
+          "value": 2000.86
+        },
+        {
+          "month": "2026-01",
+          "value": 1974.75
+        },
+        {
+          "month": "2026-02",
+          "value": 2022.77
+        },
+        {
+          "month": "2026-03",
+          "value": 2097.81
+        },
+        {
+          "month": "2026-04",
+          "value": 2168.59
+        }
+      ],
+      "forecast_summary": "Stable demand with seasonal peaks in Q4. Competitive pressure from Android flagships is steady. Price elasticity remains low in premium segment — market is unlikely to soften significantly in the next 6 months."
+    },
+    "recommendations": [
+      "Strengthen perceived value vs. Lenovo ThinkPad X1 Carbon ($1649.00) through bundled accessories or extended warranty messaging.",
+      "Address top negative feedback driver ('battery life') in product page copy and FAQ to improve conversion rate.",
+      "Plan promotional campaigns around the identified seasonal pattern: Strong Q4 peak driven by holiday gifting season (Nov/Dec +35-45%).",
+      "Ensure product listing quality (images, title, description) is optimised across all top-performing platforms to maximise organic visibility."
+    ],
+    "confidence_score": 0.85,
+    "generated_by": "fallback",
+    "metadata": {
+      "tool_execution_ms": {
+        "product_collector": 107.6,
+        "sentiment_analyzer": 93.2,
+        "trend_analyzer": 123.8
+      },
+      "total_execution_ms": 324.8,
+      "tools_succeeded": 3,
+      "tools_failed": 0,
+      "tools_skipped": 0,
+      "warnings": []
+    },
+    "deep_analysis": {
+      "key_risks": [
+        "Price competition from Lenovo ThinkPad X1 Carbon ($1649.00) could erode market share if value perception weakens.",
+        "Persistent negative sentiment around 'battery life' may suppress repeat purchase rate if unaddressed."
+      ],
+      "market_opportunities": [
+        "Seasonal pattern (Strong Q4 peak driven by holiday gifting season (Nov/Dec +35...) offers predictable windows for promotional uplift and inventory pre-positioning.",
+        "Strong momentum in the premium segment supports a limited-edition variant strategy to test price ceiling and drive PR coverage."
+      ],
+      "enriched_recommendations": [
+        {
+          "text": "Resolve top complaint 'battery life' via product update or messaging fix.",
+          "priority": "high",
+          "rationale": "'battery life' is the highest-frequency negative theme — directly impacts conversion and repeat purchase."
+        },
+        {
+          "text": "Reinforce value vs. Lenovo ThinkPad X1 Carbon through bundled offers or warranty extension.",
+          "priority": "high",
+          "rationale": "Price gap vs. cheapest competitor ($1649.00) is the primary switching incentive — reducing it perceptually protects margin."
+        },
+        {
+          "text": "Audit and optimise product listings across all top platforms.",
+          "priority": "low",
+          "rationale": "Platform listing quality directly affects organic ranking and conversion rate independent of market conditions."
+        }
+      ]
+    }
+  },
+  "error": null
+}

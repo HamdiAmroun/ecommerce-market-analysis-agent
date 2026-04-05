@@ -1,9 +1,13 @@
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Callable
 
 from app.tools.base import BaseTool
 from app.tools.product_collector import ProductCollectorTool
 from app.tools.sentiment_analyzer import SentimentAnalyzerTool
 from app.tools.trend_analyzer import TrendAnalyzerTool
+
+if TYPE_CHECKING:
+    from app.orchestrator.context import AnalysisContext
 
 
 @dataclass
@@ -11,13 +15,37 @@ class PipelineStep:
     """
     A single step in the analysis pipeline.
 
-    required=True -> if this tool fails, the whole pipeline aborts.
-    required=False -> In failure, a warning is recorded, but the pipeline continues. The final report notes the gap.
+    required=True  -> if this tool fails, the whole pipeline aborts.
+    required=False -> failure records a warning but the pipeline continues.
+    skip_if        -> optional callable evaluated at runtime against the current
+                      AnalysisContext. When it returns True the tool is skipped
+                      entirely (not failed) and a skip record is written to the
+                      context. This enables data-driven, dynamic orchestration:
+                      the pipeline shape is decided by what previous steps found,
+                      not just by the static depth parameter.
     """
 
     tool: BaseTool
     required: bool = True
     depends_on: list[str] = field(default_factory=list)
+    skip_if: Callable[["AnalysisContext"], bool] | None = None
+
+
+def _should_skip_sentiment(context: "AnalysisContext") -> bool:
+    """Runtime skip decision for SentimentAnalyzerTool.
+
+    If ProductCollector returned generic (non-catalog) data the product has no
+    established review base — running sentiment analysis would produce category-
+    average noise rather than product-specific insight.  It is more honest to
+    omit the section and note the gap than to present fabricated scores.
+
+    This is the core dynamic-orchestration hook: the pipeline re-evaluates its
+    own shape based on what a prior step actually found.
+    """
+    product_data = context.get_tool_data("product_collector")
+    if not product_data:
+        return False  # product step not yet run — don't skip
+    return product_data.get("data_source") == "generic"
 
 
 class AnalysisPipeline:
@@ -58,10 +86,17 @@ class AnalysisPipeline:
             ]
 
         # Both "standard" and "deep" use the same 3-tool pipeline.
-        # The "deep" flag changes how the agent synthesises results (more LLM calls),
-        # not which tools run.
+        # The "deep" flag changes how the agent synthesises results (richer LLM
+        # enrichment + structured deep_analysis section), not which tools run.
+        # The skip_if on SentimentAnalyzer makes the pipeline dynamic: if
+        # ProductCollector found no catalog entry the sentiment step is skipped
+        # at runtime rather than running and producing category-average noise.
         return [
             PipelineStep(tool=self._product_collector, required=True),
-            PipelineStep(tool=self._sentiment_analyzer, required=False),
+            PipelineStep(
+                tool=self._sentiment_analyzer,
+                required=False,
+                skip_if=_should_skip_sentiment,
+            ),
             PipelineStep(tool=self._trend_analyzer, required=True),
         ]

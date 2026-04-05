@@ -1,0 +1,258 @@
+{
+  "job_id": "58075873-ee21-4d45-9e67-d26b2e53c451",
+  "status": "completed",
+  "product_name": "MacBook Pro 14",
+  "category": "consumer electronics",
+  "target_market": "global",
+  "analysis_depth": "deep",
+  "created_at": "2026-04-04T23:07:33.826455Z",
+  "completed_at": "2026-04-04T23:07:33.826455Z",
+  "report": {
+    "executive_summary": "The MacBook Pro 14 faces pricing pressure and differentiation gaps from competitors like Dell XPS 15 and Lenovo ThinkPad X1 Carbon, despite its strong performance and camera quality. With a stable market direction and low price elasticity, the premium segment remains competitive.",
+    "product_analysis": {
+      "average_price": 1982.66,
+      "price_range_min": 1949.99,
+      "price_range_max": 1999.0,
+      "market_position": "premium",
+      "competitor_count": 3,
+      "top_platforms": [
+        {
+          "platform": "Apple Store",
+          "price": 1999.0,
+          "currency": "USD"
+        },
+        {
+          "platform": "Amazon",
+          "price": 1949.99,
+          "currency": "USD"
+        },
+        {
+          "platform": "Best Buy",
+          "price": 1999.0,
+          "currency": "USD"
+        }
+      ],
+      "top_competitors": [
+        {
+          "name": "Dell XPS 15",
+          "price": 1799.99,
+          "market_share_pct": 12.0
+        },
+        {
+          "name": "Lenovo ThinkPad X1 Carbon",
+          "price": 1649.0,
+          "market_share_pct": 10.0
+        },
+        {
+          "name": "Microsoft Surface Laptop 6",
+          "price": 1699.0,
+          "market_share_pct": 7.0
+        }
+      ]
+    },
+    "sentiment_analysis": {
+      "overall_score": 0.488,
+      "label": "mixed",
+      "review_count": 14731,
+      "top_themes": [
+        {
+          "theme": "performance",
+          "sentiment": "positive",
+          "frequency": 1537
+        },
+        {
+          "theme": "camera quality",
+          "sentiment": "positive",
+          "frequency": 1449
+        },
+        {
+          "theme": "build quality",
+          "sentiment": "positive",
+          "frequency": 1046
+        },
+        {
+          "theme": "ecosystem integration",
+          "sentiment": "positive",
+          "frequency": 747
+        },
+        {
+          "theme": "display quality",
+          "sentiment": "positive",
+          "frequency": 841
+        },
+        {
+          "theme": "software updates",
+          "sentiment": "positive",
+          "frequency": 551
+        }
+      ],
+      "sample_positive": "Absolutely blown away by the camera system. Night mode photos look professional.",
+      "sample_negative": "Runs warm during gaming sessions. Not a dealbreaker but noticeable."
+    },
+    "market_trends": {
+      "trend_direction": "stable",
+      "momentum_score": 0.698,
+      "seasonal_pattern": "Strong Q4 peak driven by holiday gifting season (Nov/Dec +35-45%)",
+      "search_volume_trend": [
+        {
+          "month": "2025-05",
+          "value": 73843.0
+        },
+        {
+          "month": "2025-06",
+          "value": 63735.0
+        },
+        {
+          "month": "2025-07",
+          "value": 61290.0
+        },
+        {
+          "month": "2025-08",
+          "value": 57981.0
+        },
+        {
+          "month": "2025-09",
+          "value": 59294.0
+        },
+        {
+          "month": "2025-10",
+          "value": 64446.0
+        },
+        {
+          "month": "2025-11",
+          "value": 94669.0
+        },
+        {
+          "month": "2025-12",
+          "value": 141564.0
+        },
+        {
+          "month": "2026-01",
+          "value": 116001.0
+        },
+        {
+          "month": "2026-02",
+          "value": 91984.0
+        },
+        {
+          "month": "2026-03",
+          "value": 84432.0
+        },
+        {
+          "month": "2026-04",
+          "value": 80854.0
+        }
+      ],
+      "price_trend": [
+        {
+          "month": "2025-05",
+          "value": 2015.88
+        },
+        {
+          "month": "2025-06",
+          "value": 1984.21
+        },
+        {
+          "month": "2025-07",
+          "value": 2041.85
+        },
+        {
+          "month": "2025-08",
+          "value": 1943.47
+        },
+        {
+          "month": "2025-09",
+          "value": 2027.23
+        },
+        {
+          "month": "2025-10",
+          "value": 1997.26
+        },
+        {
+          "month": "2025-11",
+          "value": 2047.32
+        },
+        {
+          "month": "2025-12",
+          "value": 2000.86
+        },
+        {
+          "month": "2026-01",
+          "value": 1974.75
+        },
+        {
+          "month": "2026-02",
+          "value": 2022.77
+        },
+        {
+          "month": "2026-03",
+          "value": 2097.81
+        },
+        {
+          "month": "2026-04",
+          "value": 2168.59
+        }
+      ],
+      "forecast_summary": "Stable demand with seasonal peaks in Q4. Competitive pressure from Android flagships is steady. Price elasticity remains low in premium segment — market is unlikely to soften significantly in the next 6 months."
+    },
+    "recommendations": [
+      "Monitor competitor pricing strategies to maintain a competitive edge",
+      "Invest in targeted marketing campaigns highlighting the MacBook Pro 14's unique features and value proposition",
+      "Optimize product offerings and bundles to enhance customer perceived value"
+    ],
+    "confidence_score": 0.85,
+    "generated_by": "llm",
+    "metadata": {
+      "tool_execution_ms": {
+        "product_collector": 111.3,
+        "sentiment_analyzer": 92.6,
+        "trend_analyzer": 126.5
+      },
+      "total_execution_ms": 330.6,
+      "tools_succeeded": 3,
+      "tools_failed": 0,
+      "tools_skipped": 0,
+      "warnings": []
+    },
+    "deep_analysis": {
+      "key_risks": [
+        "Pricing pressure from the Dell XPS 15, which is 9.3% cheaper",
+        "Differentiation gap risk posed by the Lenovo ThinkPad X1 Carbon's lower price point",
+        "Market share risk due to competitors' significant market shares, particularly Dell XPS 15's 12.0% share"
+      ],
+      "market_opportunities": [
+        "Capitalizing on the strong Q4 peak driven by holiday gifting season with targeted marketing campaigns",
+        "Enhancing the MacBook Pro 14's value proposition to attract customers willing to pay a premium for high-quality products",
+        "Expanding product offerings to cater to the growing demand for premium consumer electronics"
+      ],
+      "enriched_recommendations": [
+        {
+          "text": "Develop a targeted marketing campaign highlighting the MacBook Pro 14's superior camera quality",
+          "priority": "high",
+          "rationale": "The positive customer sentiment around the camera quality, as seen in the sample review, presents an opportunity to differentiate the product"
+        },
+        {
+          "text": "Conduct a competitor pricing analysis to identify opportunities for price adjustments",
+          "priority": "medium",
+          "rationale": "The Dell XPS 15's 9.3% cheaper price point poses a pricing pressure risk that needs to be addressed"
+        },
+        {
+          "text": "Optimize product bundles to include accessories that enhance the overall user experience",
+          "priority": "low",
+          "rationale": "The stable market direction and low price elasticity suggest that customers are willing to pay a premium for high-quality products, making product bundles an attractive option"
+        },
+        {
+          "text": "Invest in research and development to improve the MacBook Pro 14's battery life",
+          "priority": "high",
+          "rationale": "The negative customer sentiment around battery life, as seen in the sample review, presents an opportunity to address a key pain point"
+        },
+        {
+          "text": "Develop strategic partnerships with premium accessory brands to enhance the overall user experience",
+          "priority": "medium",
+          "rationale": "The premium segment's low price elasticity and stable market direction suggest that customers are willing to pay a premium for high-quality products and experiences"
+        }
+      ]
+    }
+  },
+  "error": null
+}

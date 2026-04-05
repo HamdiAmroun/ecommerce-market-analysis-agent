@@ -49,7 +49,7 @@ open http://localhost:8000/docs
 > **Note:** Service works fully without an API key using deterministic fallback synthesis.
 > Set `GROQ_API_KEY` to enable LLM-powered report generation.
 >
-> **Single-worker only:** The in-memory job store is not shared across processes. Run with the default single uvicorn worker (`docker-compose up` as written) — adding `--workers N` would cause `GET /analyze/{job_id}` to return 404 on workers that didn't create the job. See Step 4 for the production storage recommendation.
+> **Single-worker only:** The in-memory job store is not shared across processes. Run with the default single uvicorn worker (`docker-compose up` as written) - adding `--workers N` would cause `GET /analyze/{job_id}` to return 404 on workers that didn't create the job. See Step 4 for the production storage recommendation.
 ---
 
 ## Architecture & Design Decisions
@@ -76,26 +76,42 @@ Nothing is shared through a hidden state; the context is the complete picture of
 
 This made testing straightforward: unit tests prepopulate the context with fixture data and call individual methods directly, without needing to stand up the full pipeline.
 
-### Required vs optional steps
+### Required vs optional steps, and dynamic skipping
 
-`ProductCollectorTool` and `TrendAnalyzerTool` are marked required. `SentimentAnalyzerTool` is optional.
+`ProductCollectorTool` and `TrendAnalyzerTool` are marked required. `SentimentAnalyzerTool` is optional and now also dynamically skippable.
 
-The reasoning is that product pricing data and market direction are foundational – without either one, the report would be misleading rather than just incomplete. 
-While the Sentiment is an additive signal. If review scraping fails (blocked, rate-limited, no data for that product), the pricing and trend analysis is still actionable. 
-The final report notes the gap explicitly but doesn't abort.
+Static required/optional distinction handles transient failures: if sentiment scraping is blocked or rate-limited, the pipeline continues and notes the gap. 
+But there's a second case: unknown products have no established review base. 
+Running sentiment analysis on them would produce category-average noise, which is worse than silence - it looks authoritative but isn't grounded in real data.
 
-This maps to how I'd design this in production. I don't want a transient failure in one data source to take down an entire analysis job.
+So I added a `skip_if` callable to `PipelineStep`. The executor evaluates it after `ProductCollector` has run and written its result to the context. 
+If `data_source == "generic"` (no catalog entry found), sentiment is skipped - not failed - and the metadata records `tools_skipped: 1`. 
+Pipeline re-evaluates its own shape based on what a prior step actually found.
 
-### LLM for synthesis only, not for orchestration
+This is the core dynamic orchestration mechanism: same request structure can produce different execution graphs depending on intermediate results.
 
-LLM is called once, after all tools have finished, to write the executive summary and recommendations. 
-It never decides which tools to run, never processes raw API responses, and never touches the structured data sections of the report.
+### Tool interaction via the blackboard
 
-There's a version of this where the LLM acts as a planner – deciding which tools to invoke based on the request – but it buys very little here. 
-The tool selection logic is dead simple (depth param -> pipeline config), and making it LLM-driven would add latency, non-determinism, and a failure mode with no clear recovery path.
+Tools now read each other's outputs from the shared context - not just the original request.
 
-The structured report sections (pricing table, sentiment scores, trend series) are always built directly from tool output. 
-LLM output is only used for text. This means the report data is reliable regardless of whether the LLM call succeeds.
+`SentimentAnalyzer` reads `market_position` from `ProductCollector`'s result: premium products attract more critical reviewers (higher expectations), so the sentiment score range shifts slightly downward. 
+Price-related negative themes are also weighted higher for premium products, because that's where real review data concentrates its criticism.
+
+`TrendAnalyzer` reads `average_price` from `ProductCollector` and uses it as the base for the price trend series - rather than the category-level default. 
+Premium products also get amplified seasonal peaks, since high-ticket gift buying is more sensitive to Q4 than budget items.
+
+This makes the blackboard pattern genuinely functional: the context is not just shared state, it's a live feed of intermediate results that downstream tools adapt to.
+
+### LLM for synthesis only in standard mode - and intermediate enrichment in deep mode
+
+In standard mode: LLM is called once, after all tools have finished, to write the executive summary and recommendations. 
+It never decides which tools to run, never processes raw API responses, and never touches the structured data sections.
+
+In deep mode: there are two LLM passes. The first (`extract_competitive_signals`) is a short, focused call on product and competitor data only - before sentiment and trend context are included. 
+It extracts the 2–3 most important competitive dynamics as a plain-text paragraph. The second call (full synthesis) receives all tool data *plus* these pre-extracted signals, 
+and is asked to produce a richer `deep_analysis` block: `key_risks`, `market_opportunities`, and `enriched_recommendations` - each with a `priority` (high/medium/low) and a one-sentence `rationale` citing a specific data point.
+
+The structured report sections (pricing table, sentiment scores, trend series) are always built directly from tool output in both modes. LLM output is only ever used for narrative.
 
 ### LLM choice: Groq + Llama 3.3 70B
 
@@ -116,12 +132,13 @@ Separating these from the Python that uses them means prompt engineers can itera
 
 ### Mocked data
 
-All three tools use deterministic mock data. The same product name always produces the same output – seeded by `abs(hash(product_name.lower())) % 10_000`. 
-Five real products (iPhone 16 Pro, iPhone 16, Nike Air Max 270, MacBook Pro 14, Sony WH-1000XM5) have hand-crafted datasets; everything else falls through to category-based generic generation.
+All three tools use deterministic mock data seeded by `hashlib.md5(product_name.encode())` - stable across processes, machines, and Python versions (unlike `hash()`. 
+Five real products have hand-crafted datasets; everything else falls through to category-based generic generation.
 
-This was a deliberate call for this prototype, not a scraping service. 
-Also, using real APIs would introduce rate limits, auth overhead, and flakiness into what's meant to be a demo of orchestration design. 
-The mock data is realistic enough (plausible prices, actual seasonal patterns, real competitor names) that the LLM synthesis produces coherent output.
+This was a deliberate call for this prototype, not a scraping service. Using real APIs would introduce rate limits, auth overhead, and flakiness into what's meant to be a demo of orchestration design. 
+Mock data is realistic enough (plausible prices, actual seasonal patterns, real competitor names) that LLM synthesis produces coherent output.
+
+`ProductCollector` explicitly tags each result as `data_source: "catalog"` or `data_source: "generic"` - this tag is what the dynamic skip condition reads downstream.
 
 ---
 
@@ -177,8 +194,8 @@ Submits an analysis job. Returns immediately with a `job_id`; the analysis runs 
 
 `analysis_depth` options:
 - `quick` - product data + trends only (skips sentiment, ~200ms)
-- `standard` - all three tools, sentiment optional (default)
-- `deep` - same three tools as standard (no behavioral difference in the current prototype); the hook is there for future extension such as including full sentiment themes in the LLM prompt or running a second enrichment pass
+- `standard` - all three tools; sentiment is optional and may be dynamically skipped (see below)
+- `deep` - all three tools + intermediate LLM competitive signal extraction pass + richer synthesis returning a `deep_analysis` section with `key_risks`, `market_opportunities`, and `enriched_recommendations` (each with `priority` and `rationale`)
 
 **Returns 202** with `{"job_id": "...", "status": "pending"}`.
 
@@ -202,7 +219,7 @@ Poll until `status` is `completed` or `failed`. On completion, the full `report`
 }
 ```
 
-Please see `examples/fallback_sample_report_iphone16.json` or `examples/groq_llm_report_iphone16.json` for the full response shape.
+Please see `examples/fallback_sample_report_iphone16_20260405.json` or `examples/groq_llm_report_iphone16_20260405.json` for the full response shape.
 
 ### `GET /analyze` - List All Jobs
 
@@ -242,19 +259,59 @@ open htmlcov/index.html
 ```
 Please see `tests/conftest.py` for test setup. Running `pytest --cov=app --cov-report=html` generates `htmlcov/index.html` with the full line-by-line coverage report.
 
-**Test coverage: 84% overall (88 tests, 0 failures).** The uncovered lines are almost entirely the live Groq API call path in `llm/client.py` and `prompts/builder.py` — tested indirectly through the fallback path and not exercised in CI since no API key is required.
+**Test coverage: 105 tests, 0 failures.** The uncovered lines are almost entirely the live Groq API call path in `llm/client.py` and `prompts/builder.py` - tested indirectly through the fallback path and not exercised in CI since no API key is required.
 
 **Test coverage summary:**
 
 | Module | What's tested |
 |--------|---------------|
-| `test_product_collector` | Known products, unknown products, determinism, price validity |
+| `test_product_collector` | Known products, unknown products, determinism, price validity, `data_source` field |
 | `test_sentiment_analyzer` | Score ranges, label validity, determinism, category profiles |
 | `test_trend_analyzer` | 12-month timeseries, direction validity, momentum range, determinism |
-| `test_pipeline` | Step counts per depth, required/optional flags, step ordering |
+| `test_pipeline` | Step counts per depth, required/optional flags, `skip_if` callable present, skip condition logic |
 | `test_executor` | Successful execution, timeout handling, retry logic |
-| `test_agent` | Full run, quick depth, required tool failure, optional tool failure, metadata |
+| `test_agent` | Full run, quick depth, required tool failure, optional tool failure, deep mode `deep_analysis` section, dynamic skip for unknown products, metadata |
 | `test_routes` | All endpoints: 200/202/404/422 responses, end-to-end flow |
+
+### Live end-to-end verification
+
+Beyond the automated test suite, I also did verification of all key behaviors by running the live API with `GROQ_API_KEY` set. 
+The results below are from actual requests – not fixtures.
+
+**Dynamic orchestration (unknown product)**
+
+```bash
+curl -X POST .../analyze -d '{"product_name": "XyloGadget Pro 3000", "category": "consumer electronics"}'
+```
+`data_source: "generic"` -> `skip_if` fires -> `sentiment_analyzer` skipped at runtime, `tools_skipped: 1` in metadata, `sentiment_analyzer` execution time recorded as `0.0ms`, `sentiment_analysis` section `null` in the report. 
+A warning is added to the job: `"sentiment_analyzer skipped: product not in catalog"`.
+
+**Deep mode - two-pass LLM synthesis**
+
+```bash
+curl -X POST .../analyze -d '{"product_name": "MacBook Pro 14", "analysis_depth": "deep"}'
+```
+Two LLM calls: 1) competitive signal extraction -> 2) full synthesis. 
+
+Output includes a `deep_analysis` block with 3 `key_risks`, 3 `market_opportunities`, and 5 `enriched_recommendations` each carrying `priority: high|medium|low` and a `rationale` citing a specific data point (e.g., competitor price, sentiment score). `confidence_score: 0.9`, `tools_succeeded: 3`.
+
+**Cross-tool data influence**
+
+Same `analysis_depth: "standard"`, different market positions:
+- iPhone 16 Pro (`market_position: premium`): `sentiment.overall_score: 0.53` - tighter range, price-related negatives weighted higher
+- Nike Air Max 270 (`market_position: mid-range`): `sentiment.overall_score: 0.67` - standard range, no premium adjustment
+
+`SentimentAnalyzer` is reading `market_position` from the ProductCollector result in the shared context and adjusting its output accordingly.
+
+**LLM-generated recommendations reference tool data**
+
+Sony WH-1000XM5 deep mode recommendation (verbatim from live output):
+> *"Highlight the ANC superiority over Bose QuietComfort 45, which is $28.24 cheaper"*
+
+Price differential comes from `ProductCollector`'s competitor pricing data - the LLM is using numbers from the tool output, not generating them.
+
+**Fallback path** (no `GROQ_API_KEY`): same flow, `generated_by: "fallback"`, deterministic report based on seeded tool data. 
+All five catalog products produce the same output on every run.
 
 ---
 
@@ -448,7 +505,7 @@ The metrics that matter most to track as a trend, not just spot-check:
 - Rate of faithfulness check failures – even one per day is worth investigating
 
 **One thing I would explicitly avoid:** running LLM-as-Judge synchronously in the hot path on every request. 
-Rule-based faithfulness checks are the right synchronous safety net — they're cheap and don't depend on a second LLM being available. LLM-as-Judge should run async and sampled, not inline.
+Rule-based faithfulness checks are the right synchronous safety net - they're cheap and don't depend on a second LLM being available. LLM-as-Judge should run async and sampled, not inline.
 
 ---
 
@@ -479,9 +536,9 @@ Scale workers horizontally: `docker-compose scale worker=10`
 
 #### 6.2 Tool Parallelisation
 
-In the current implementation all three tools run sequentially. That was a deliberate choice for the prototype — a linear for-loop makes the control flow obvious when reading the code, which was the priority here.
+In the current implementation all three tools run sequentially. That was a deliberate choice for the prototype - a linear for-loop makes the control flow obvious when reading the code, which was the priority here.
 
-In production, `SentimentAnalyzer` and `TrendAnalyzer` have **no data dependency on each other** — both only need the initial request. So once `ProductCollector` completes, the other two can run concurrently with `asyncio.gather`. 
+In production, `SentimentAnalyzer` and `TrendAnalyzer` have **no data dependency on each other** - both only need the initial request. So once `ProductCollector` completes, the other two can run concurrently with `asyncio.gather`. 
 That alone cuts the sequential portion of the pipeline from three tool latencies to two, which matters once the tools are hitting real APIs with real network latency.
 
 #### 6.3 LLM Prompt Optimization and Caching Strategy
@@ -489,7 +546,7 @@ That alone cuts the sequential portion of the pipeline from three tool latencies
 Currently, the synthesis prompt is already compressed to ~500 tokens. Further reduction: drop sample reviews, truncate forecast text, and replace verbose competitor lists with counts and price ranges.
 
 On top of that what I would do for LLM cost optimization:
-- **Cache synthesis by data hash** — if two requests produce identical tool data (same product + same cache hit), reuse the LLM response. Cache key: `SHA256(compressed_tool_data)`. At scale, this could cut LLM calls by 60–70% for popular products.
+- **Cache synthesis by data hash** - if two requests produce identical tool data (same product + same cache hit), reuse the LLM response. Cache key: `SHA256(compressed_tool_data)`. At scale, this could cut LLM calls by 60–70% for popular products.
 
 ### Step 7 – Continuous Improvement & A/B Testing
 

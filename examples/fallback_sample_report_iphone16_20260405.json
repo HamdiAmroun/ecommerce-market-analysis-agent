@@ -1,0 +1,101 @@
+{
+  "job_id": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "completed",
+  "product_name": "iPhone 16 Pro",
+  "category": "consumer electronics",
+  "target_market": "US market",
+  "analysis_depth": "standard",
+  "created_at": "2025-04-03T10:00:00Z",
+  "completed_at": "2025-04-03T10:00:01.340Z",
+  "error": null,
+  "report": {
+    "executive_summary": "iPhone 16 Pro holds a commanding premium position in the consumer electronics market, averaging $994.00 across four major platforms ($979–$1,099 range). It faces three significant Android competitors, with Samsung Galaxy S25 Ultra leading at 28% market share despite a higher $1,299 price point. Customer sentiment is positive (score: 0.62, 28,400 reviews), with camera quality and performance as the dominant praise drivers, while battery life and missing charger remain the primary friction points. Market demand is stable with strong Q4 seasonal momentum. Maintain pricing discipline and address battery perception to protect premium brand equity.",
+    "product_analysis": {
+      "average_price": 994.0,
+      "price_range_min": 979.0,
+      "price_range_max": 1099.0,
+      "market_position": "premium",
+      "competitor_count": 3,
+      "top_platforms": [
+        { "platform": "Amazon", "price": 999.99, "currency": "USD" },
+        { "platform": "Best Buy", "price": 999.00, "currency": "USD" },
+        { "platform": "eBay (new)", "price": 979.00, "currency": "USD" },
+        { "platform": "Apple Store", "price": 1099.00, "currency": "USD" }
+      ],
+      "top_competitors": [
+        { "name": "Samsung Galaxy S25 Ultra", "price": 1299.99, "market_share_pct": 28.0 },
+        { "name": "Google Pixel 9 Pro", "price": 999.00, "market_share_pct": 8.0 },
+        { "name": "OnePlus 13", "price": 899.00, "market_share_pct": 3.5 }
+      ]
+    },
+    "sentiment_analysis": {
+      "overall_score": 0.623,
+      "label": "positive",
+      "review_count": 28401,
+      "top_themes": [
+        { "theme": "performance", "sentiment": "positive", "frequency": 1387 },
+        { "theme": "camera quality", "sentiment": "positive", "frequency": 1244 },
+        { "theme": "build quality", "sentiment": "positive", "frequency": 921 },
+        { "theme": "ecosystem integration", "sentiment": "positive", "frequency": 815 },
+        { "theme": "battery life", "sentiment": "negative", "frequency": 843 },
+        { "theme": "price", "sentiment": "negative", "frequency": 697 }
+      ],
+      "sample_positive": "Best phone I've ever owned. The performance is buttery smooth even with heavy apps.",
+      "sample_negative": "Why is the fast charger not included in the box at this price point?"
+    },
+    "market_trends": {
+      "trend_direction": "stable",
+      "momentum_score": 0.714,
+      "seasonal_pattern": "Strong Q4 peak driven by holiday gifting season (Nov/Dec +35-45%)",
+      "search_volume_trend": [
+        { "month": "2024-05", "value": 74800 },
+        { "month": "2024-06", "value": 73200 },
+        { "month": "2024-07", "value": 74100 },
+        { "month": "2024-08", "value": 75400 },
+        { "month": "2024-09", "value": 79900 },
+        { "month": "2024-10", "value": 84600 },
+        { "month": "2024-11", "value": 108200 },
+        { "month": "2024-12", "value": 116400 },
+        { "month": "2025-01", "value": 70400 },
+        { "month": "2025-02", "value": 66800 },
+        { "month": "2025-03", "value": 73900 },
+        { "month": "2025-04", "value": 78700 }
+      ],
+      "price_trend": [
+        { "month": "2024-05", "value": 993.20 },
+        { "month": "2024-06", "value": 989.80 },
+        { "month": "2024-07", "value": 995.40 },
+        { "month": "2024-08", "value": 998.10 },
+        { "month": "2024-09", "value": 1001.60 },
+        { "month": "2024-10", "value": 997.30 },
+        { "month": "2024-11", "value": 999.90 },
+        { "month": "2024-12", "value": 1004.50 },
+        { "month": "2025-01", "value": 991.70 },
+        { "month": "2025-02", "value": 988.20 },
+        { "month": "2025-03", "value": 993.80 },
+        { "month": "2025-04", "value": 994.00 }
+      ],
+      "forecast_summary": "Stable demand with seasonal peaks in Q4. Competitive pressure from Android flagships is steady. Price elasticity remains low in premium segment — market is unlikely to soften significantly in the next 6 months."
+    },
+    "recommendations": [
+      "Strengthen perceived value vs. OnePlus 13 ($899.00) through bundled accessories or extended warranty messaging to justify the $100 premium gap.",
+      "Address the top negative feedback driver ('battery life') explicitly in product page copy and FAQ — highlight the 20-hour battery specification and Low Power Mode improvements to improve conversion rate.",
+      "Plan promotional campaigns around the identified seasonal pattern: Strong Q4 peak driven by holiday gifting season (Nov/Dec +35-45%).",
+      "Ensure product listing quality (images, title, description) is optimised across all top-performing platforms — particularly Amazon and Best Buy — to maximise organic visibility.",
+      "Consider a trade-in promotion targeting Samsung Galaxy S25 Ultra owners to capture share from the largest competitor segment (28% market share)."
+    ],
+    "confidence_score": 0.850,
+    "generated_by": "fallback",
+    "metadata": {
+      "tool_execution_ms": {
+        "product_collector": 103.4,
+        "sentiment_analyzer": 81.7,
+        "trend_analyzer": 124.2
+      },
+      "total_execution_ms": 340.1,
+      "tools_succeeded": 3,
+      "tools_failed": 0,
+      "warnings": []
+    }
+  }
+}

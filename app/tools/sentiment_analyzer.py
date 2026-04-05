@@ -1,4 +1,5 @@
 import asyncio
+import hashlib
 import random
 from typing import TYPE_CHECKING, Any
 
@@ -179,16 +180,36 @@ class SentimentAnalyzerTool(BaseTool):
             context.request.category.lower(),
             SENTIMENT_PROFILES["_default"],
         )
-        rng = random.Random(abs(hash(context.request.product_name.lower())) % 10_000)
+        rng = random.Random(int(hashlib.md5(context.request.product_name.lower().encode()).hexdigest(), 16) % 10_000)
+
+        # ── Cross-tool influence: read ProductCollector output from blackboard ─
+        # Market position affects review expectations and sentiment distribution.
+        # Premium products attract more critical reviewers (higher expectations),
+        # budget products get more lenient scores (value expectations more easily met).
+        product_data = context.get_tool_data("product_collector")
+        market_position = product_data.get("market_position", "mid-range") if product_data else "mid-range"
 
         lo, hi = profile["score_range"]
+        if market_position == "premium":
+            # Tighten range downward: higher price → higher expectations → more scrutiny
+            lo = round(max(lo - 0.05, -1.0), 3)
+            hi = round(max(hi - 0.04, lo + 0.10), 3)
+        elif market_position == "budget":
+            # Ease range upward: value expectations are easier to meet
+            lo = round(min(lo + 0.05, 1.0), 3)
+            hi = round(min(hi + 0.05, 1.0), 3)
+
         overall_score = round(lo + rng.random() * (hi - lo), 3)
         label = _score_to_label(overall_score)
 
         rc_lo, rc_hi = profile["review_count_range"]
         review_count = rng.randint(rc_lo, rc_hi)
 
-        # Pick themes with slight count variance
+        # Pick themes with slight count variance.
+        # For premium products boost price-related negative theme frequency —
+        # high-price items attract disproportionate value-for-money criticism.
+        price_boost = 1.35 if market_position == "premium" else 1.0
+
         pos_themes = [
             SentimentTheme(
                 theme=t,
@@ -201,7 +222,11 @@ class SentimentAnalyzerTool(BaseTool):
             SentimentTheme(
                 theme=t,
                 sentiment="negative",
-                frequency=int(freq * (0.85 + rng.random() * 0.3)),
+                frequency=int(
+                    freq
+                    * (0.85 + rng.random() * 0.3)
+                    * (price_boost if "price" in t.lower() else 1.0)
+                ),
             )
             for t, freq in profile["negative_themes"]
         ]
